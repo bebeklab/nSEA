@@ -1,8 +1,8 @@
 The Chinese Glioma Genome Atlas (CGGA) serves as an invaluable resource for genomics research focused on glioma, a common and lethal type of brain tumor. Established by Chinese researchers, it provides comprehensive functional genomic data from Chinese glioma patients, enriching our understanding of glioma at the molecular level.
 In our study, we utilized two datasets from the CGGA to validate our findings. The first dataset, identified as mRNAseq_325, includes mRNA sequencing data from 325 samples collected and sequenced using the Illumina HiSeq 2000 or 2500 platform. The second dataset, labeled as mRNAseq_693, also encompasses mRNA sequencing data but from a larger pool of 693 samples sequenced on the Illumina HiSeq platform.
-Any use of these datasets or the methods encapsulated within should appropriately reference the original publications (Zhao et al., 2021; Zhao et al., 2017; Bao et al., 2014; Zhang et al., new; Wang et al., 2015; Liu et al., 2018) that detail the creation, maintenance, and utility of the CGGA and its contributing datasets. These two datasets form the foundation of our research and serve as a robust tool for cross-validation in our investigation of glioma.
+Any use of these datasets or the methods encapsulated within should appropriately reference the original publications (Zhao et al., 2021; Zhao et al., 2017; Bao et al., 2014; Zhang et al., new; Wang et al., 2015; Liu et al., 2018) that detail the creation, maintenance, and utility of the CGGA and its contributing datasets. The two datasets sourced from the CGGA underpin our research, providing a robust data foundation for the validation of our nSEA as applied to the comprehensive study of LGG.
 
-The data are published on http://www.cgga.org.cn/download.jsp
+The data are collected from http://www.cgga.org.cn/download.jsp
 
 If you use this part of the data (or method included in it), please consider to cite:
 
