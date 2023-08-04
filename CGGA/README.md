@@ -3,6 +3,7 @@ In our study, we utilized two datasets from the CGGA to validate our findings. T
 Any use of these datasets or the methods encapsulated within should appropriately reference the original publications (Zhao et al., 2021; Zhao et al., 2017; Bao et al., 2014; Zhang et al., new; Wang et al., 2015; Liu et al., 2018) that detail the creation, maintenance, and utility of the CGGA and its contributing datasets. These two datasets form the foundation of our research and serve as a robust tool for cross-validation in our investigation of glioma.
 
 The data are published on http://www.cgga.org.cn/download.jsp
+
 If you use this part of the data (or method included in it), please consider to cite:
 
 1. Zhao, Z., Zhang, KN., Wang, QW., et al. (2021). Chinese Glioma Genome Atlas (CGGA): A Comprehensive Resource with Functional Genomic Data from Chinese Glioma Patients. Genomics, Proteomics & Bioinformatics 19(1):1-12.
