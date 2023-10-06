@@ -47,7 +47,6 @@ heatmap.31 <- function(x,
                       NumColSideColors = 1,
                       NumRowSideColors = 1,
                       cex.main=NULL,
-                      col.vertical=T,
                       KeyValueName="Value",...){
 
     invalid <- function (x) {
@@ -249,7 +248,6 @@ heatmap.31 <- function(x,
             lmat <- cbind(lmat[, 1] + 1, c(rep(NA, nrow(lmat) - 1), 1), lmat[,2] + 1)
             #lwid <- c(lwid[1], 0.2, lwid[2])
             lwid <- c(lwid[1], side.height.fraction*NumRowSideColors, lwid[2])
-            print(lwid)
         }
         lmat[is.na(lmat)] <- 0
     }
@@ -305,7 +303,7 @@ heatmap.31 <- function(x,
             csc = matrix(as.numeric(csc), nrow = dim(csc)[1])
             image(csc, col = as.vector(csc.colors), axes = FALSE)
             if (length(colnames(ColSideColors)) > 0) {
-                axis(2, 0:(dim(csc)[2] - 1)/max(1,(dim(csc)[2] - 1)), colnames(ColSideColors), las = 2, tick = FALSE, cex.axis=cexRow)
+                axis(2, 0:(dim(csc)[2] - 1)/max(1,(dim(csc)[2] - 1)), colnames(ColSideColors), las = 2, tick = FALSE)
             }
         }
     }
@@ -334,17 +332,12 @@ heatmap.31 <- function(x,
         image(1:nc, 1:nr, mmat, axes = FALSE, xlab = "", ylab = "",
             col = na.color, add = TRUE)
     }
-    if(col.vertical){
-      axis(1, 1:nc, labels = labCol, las = 2, tick = 0,line=-0.5,
-           cex.axis = cexCol)
-    }else{
-      axis(1, 1:nc, labels = labCol, las = 0, tick = 0,line=0.5,
-           cex.axis = cexCol)
-    }
+    axis(1, 1:nc, labels = labCol, las = 2, line = -0.5, tick = 0,
+         cex.axis = cexCol)
     #axis(1, seq(0,nc,5), las = 2, line = 1, tick = 1,
     #     cex.axis = cexCol)
     if (!is.null(xlab))
-        mtext(xlab, side = 1, line = margins[1] - 4,cex=2)
+        mtext(xlab, side = 1, line = margins[1] - 1.25)
     axis(4, iy, labels = labRow, las = 2, line = -0.5, tick = 0,
         cex.axis = cexRow)
     #axis(4, seq(0,nr,5), las = 2, line = 1, tick = 1,
