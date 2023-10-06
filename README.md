@@ -27,6 +27,8 @@ Result Analysis
 2.	For consensus clustering, you can define your own parameters, such as choosing a different clustering algorithm.
 3.	For survival analysis, you can choose specific groups for plotting of survival curves.
 4.	In the example script, heatmap generation requires the subtype annotation. You can remove it or add other annotations. These annotations are supposed to be loaded by “Data_Additional_Processing_XXX.R”.
-5.	The script can also plot all the subnetwork states by their gene expression values.
-6.	GSEA script can output a table containing detailed GSEA results and a barplot which visualize the result. User can also define the GSEA parameters including the algorithm and the test statistics. See “topGO” package for more details.
+6.	The script can also plot all the subnetwork states by their gene expression values.
+7.	GSEA script can output a table containing detailed GSEA results and a barplot which visualize the result. User can also define the GSEA parameters including the algorithm and the test statistics. See “topGO” package for more details.
+
+Follow the nsea_complete.rmd under nSEA/codes. html version is also available there.
 
