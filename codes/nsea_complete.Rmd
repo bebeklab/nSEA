@@ -1,0 +1,458 @@
+---
+title: "nSEA"
+author:
+  affiliation: 'Case Western Reserve University'
+  email: 'zxz1212@case.edu'
+  name: 'Ziyin Zhao'
+date: '`r format(Sys.Date())`'
+output:
+  html_document:
+    theme: 'united'
+    highlight: 'tango'
+    df_print: 'paged'
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    code_folding: 'hide'
+params:
+    nameOfScript: 'nsea_complete.Rmd'
+    nameOfProject: 'nsea'
+    dirOfCounts: 'counts'
+    dirOfData:   'data'
+    dirOfGeo:    'geo'
+    dirOfR:      'R'
+    dirOfSave:   'save'
+    dirOfScriptsDraft: 'scriptsDraft'
+    dirOfScriptsFinal: 'scriptsFinal'
+    saveRDSname: 'version1'
+    pathToPreviousRdataFile: ''
+    
+abstract: This is template of of a markdown script. Any text in <angle brackets> or in square brackets [] should be replaced with your own text.
+---
+
+
+```{r setup, include=FALSE}
+suppressPackageStartupMessages(library(knitr))
+
+knitr::opts_chunk$set(warning      = FALSE    # Set to TRUE when coding, FALSE when completed.
+                     , message     = FALSE    # Set to TRUE when coding, FALSE when completed. 
+                     , echo        = TRUE     # Leave as TRUE for Course, but turn this off for real projects
+                     , cache       = FALSE    # Turn off, be careful when using Cache
+                     , strip.white = TRUE     # No reason not to do this.
+                     )
+
+# do not insert anythin between  ---  and setup chunk.
+# don't put anything else in this chunck
+
+# End of setup
+```
+
+
+# Load packages and data processing {.tabset}
+
+## Load packages
+
+Library the packages and import function by running **combined_pre_run.r**
+```{r}
+source("combined_pre_run.r")
+```
+
+--------------------------------------------------------------------------
+
+## Load data
+
+All the data can be loaded and transformed through `TCGA_Data_Processing.R`. If you want to transform the data, modify the "Transformation" part in Parameters.
+```{r}
+source("TCGA_Data_Processing.R")
+```
+
+After running the **TCGA_Data_Processing.R**, the `save.data` would be generated, which includes the `save.data$Sbn.Exp`, `save.data$Sur.d` and `save.data$Sur.l`
+
+``save.data$Sbn.Exp` shows the genomicMatrix normalized by z-score and  only kept the sample which are identified as Primary Solid Tumor.
+```{r}
+save.data$Sbn.Exp[1:5, 1:5]
+
+ncol(save.data$Sbn.Exp)
+```
+
+--------------------------------------------------------------------------
+
+## Data additional processing
+
+If you have additional annotations such as subtypes and mutations, you should write a separate script to add these annotations to the '`save.data`' object. Name it as 'Data_Additional_Processing_' plus the cancer code and put it in to the project directory.
+
+```{r}
+source("Data_Additional_Processing_LGG.R")
+```
+
+--------------------------------------------------------------------------
+
+## Load parameters
+
+Run the data processing script. Two files will be generated. **TCGA_XXX_Data.rda** contains all the data for NSEA pipeline.
+
+```{r}
+load("TCGA/TCGA_UCSC_LGG/TCGA_LGG_Data_par.rda")
+```
+
+
+
+
+
+--------------------------------------------------------------------------
+
+# Generate network {.tabset}
+
+Source the file **NSEA_Pipeline2.R** to generate the subnetwork and save it. The size of the network can be modified by changing the parameter.
+```{r, eval=FALSE}
+source('NSEA_Pipeline2.R')
+
+# I make a copy since I don't want to spend so many time to regenerate the network when I knit this file
+target_path <- paste0("TCGA/TCGA_NSEA_", Cancer.Code, "_Data.rda")
+save.name2=paste0(filepath,'/TCGA_NSEA_',Cancer.Code,'_Data_with_network','.rda')
+file.copy(save.name1, save.name2)
+```
+
+
+
+
+
+--------------------------------------------------------------------------
+
+# Data analysis {.tabset}
+
+## Load data
+
+Running codes from "load data" part from **NSEA_Grouping_Plotting3**
+
+```{r}
+load("TCGA_LGG_Data_par.rda")
+#Parameters
+Folder.Path='TCGA'
+Cancer.Code='LGG'
+Delete.Data=T #Delete data after loading
+par(mar=c(5.1,4.1,4.1,2.1))
+
+#Load data
+filepath=paste0(Folder.Path,'/','TCGA_UCSC_',Cancer.Code)
+datafilenm=paste0(filepath,'/TCGA_',Cancer.Code,'_Data','.rda')
+dataname=paste0('TCGA.',Cancer.Code,'.Data')
+load(datafilenm)
+save.data=get(dataname)
+#datafilenm2=paste0(filepath,'/TCGA_NSEA_',Cancer.Code,'_Data','.rda')
+datafilenm2=paste0(filepath,'/TCGA_NSEA_',Cancer.Code,'_Data_with_network','.rda')
+dataname2=paste0('TCGA.NSEA.',Cancer.Code,'.Data')
+load(datafilenm2)
+NSEA.save.data=get(dataname2)
+
+Sbn.Exp=save.data$Sbn.Exp
+Sur.l=save.data$Sur.l
+Sur.d=save.data$Sur.d
+save.data.nms=names(save.data)
+if('Subtypes' %in% save.data.nms){
+  Subtypes=save.data$Subtypes
+}
+if('Hist.Type' %in% save.data.nms){
+  Hist.Type=save.data$Hist.Type
+}
+if('Expression.Type' %in% save.data.nms){
+  Expression.Type=save.data$Expression.Type
+}
+if('Methylation.Type' %in% save.data.nms){
+  Methylation.Type=save.data$Methylation.Type
+}
+if('Mutation.Table' %in% save.data.nms){
+  Mutation.Table=save.data$Mutation.Table
+}
+if('Subtype.Table' %in% save.data.nms){
+  Subtype.Table=save.data$Subtype.Table
+}
+
+Sbn.Network=NSEA.save.data$Sbn.Network
+diff.sd=NSEA.save.data$diff.sd
+diff.cor.m=NSEA.save.data$diff.cor.m
+Sbn.Network3=NSEA.save.data$Sbn.Network3
+Sbn.List=NSEA.save.data$Sbn.List
+all.sns.gs=NSEA.save.data$all.sns.gs
+Sbn.Network21=NSEA.save.data$Sbn.Network21
+Sbn.l.cors=NSEA.save.data$Sbn.l.cors
+Sbn3.vns=NSEA.save.data$Sbn3.vns
+f.Sbn.List=NSEA.save.data$f.Sbn.List
+sbn.maxs=NSEA.save.data$sbn.maxs
+sbn.maxs2=NSEA.save.data$sbn.maxs2
+NSEA.pars=NSEA.save.data$NSEA.pars
+
+Network.file=NSEA.pars$Network.file
+Sb.len=NSEA.pars$Sb.len
+SD.Threshold=NSEA.pars$SD.Threshold
+Gene.Threshold=NSEA.pars$Gene.Threshold
+Sbn.Cor.Threshold=NSEA.pars$Sbn.Cor.Threshold
+Network.Expansion=NSEA.pars$Network.Expansion
+Expansion.Exlusive=NSEA.pars$Expansion.Exlusive
+
+rm(save.data,NSEA.save.data,NSEA.pars)
+if(Delete.Data){
+  rm(list=c(dataname,dataname2))
+}
+
+```
+
+--------------------------------------------------------------------------
+
+## Generate subnetwork matrix
+
+Since a subnetwork with size of 92 shows the best performance, the `f.Sbn.List` would be replaced by the subnetwork we identified
+
+```{r}
+#Generate subnetwork matrix
+load("SbnGenes.rda")
+       all<-NULL
+       sbnlist_92<-list()
+       sbnlist_92_full<-list()
+       name<-vector()
+
+       
+       #induced.subgraph(big graph, node list of one subnetwork (do that for all 92 subnetworks so we get all edges in each of the subnetwork))
+       
+#re-create the subnetworks in the exact same format as TCGA
+for(i in 1:8){
+  j<-length(Subnetwork.Genes[[i]]$sbl2)
+  for(k in 1:j){
+    SN_Name<-names(Subnetwork.Genes[[i]]$sbl2)[k]
+    sn<-c(unlist(Subnetwork.Genes[[i]]$sbl1[k]), unlist(Subnetwork.Genes[[i]]$sbl2[k]))
+    sbn<-list(c(SN_Name,length(sn),paste(unlist(sn))))
+    sbn1<-list(paste(unlist(sn)))
+    sbnlist_92_full<-append(sbnlist_92_full,sbn)
+    sbnlist_92<-append(sbnlist_92,sbn1)
+    name<-c(name,SN_Name)
+    print(c(SN_Name,length(sn),paste(unlist(sn))),quote = FALSE)
+    all<-c(all,sn)
+  }
+}
+
+#give lists appropriate subnetwork names
+names(sbnlist_92)<-name 
+
+f.Sbn.List <- sbnlist_92
+
+names(f.Sbn.List)
+```
+
+```{r}
+#Generate subnetwork matrix
+#names(f.Sbn.List)=paste0('SN',1:length(f.Sbn.List)) #run this if you follow the pipeline and generate your new subnetwork from beginning, instead of using the sbn_92
+
+f.Sbn.List1=f.Sbn.List
+
+egv.m=sapply(f.Sbn.List1,function(gs){
+  d.m=Sbn.Exp[gs,]
+  egv=prcomp(d.m,scale=F,center=F)$rotation[,1]
+  egv=remove.outliers(egv,
+                  coef1=Outliers.par$coef,
+                  a1=Outliers.par$a,
+                  b1=Outliers.par$b)
+  return(egv)
+})
+```
+
+--------------------------------------------------------------------------
+
+## Consensus Clustering
+
+Fucntion ConsensusClusterPlus() is used to perform the consensus cluster on the matrix after reduce the dimension
+
+```{r, message=FALSE}
+wardD2 = function(this_dist,k){
+  tmp = hclust(this_dist,method='ward.D2')
+  assignment = cutree(tmp,k)
+  return(assignment)
+}
+
+result=ConsensusClusterPlus(t(egv.m),maxK=7,reps=1000,pItem=0.75,pFeature=1,
+                            title=paste0(filepath,"/consensus_cluster/"),clusterAlg="pam",distance="euclidean",
+                            #innerLinkage="ward.D2", finalLinkage="average",
+                            plot="png",seed=1,verbose=T)
+```
+
+
+
+```{r}
+for (i in 1:3){
+  filename <- sprintf("/consensus_cluster/consensus%03d.png", length(result) + i)
+  full_path <- paste0(filepath, filename)
+  knitr::include_graphics(full_path)
+}
+```
+
+Based on CDF curves we decide to cluster is into 5 classes
+
+
+```{r}
+egv.memb=result[[5]]$consensusClass
+egv.memb.f=factor(egv.memb)
+egv.dendro=as.dendrogram(result[[5]]$consensusTree,labels=egv.memb)
+```
+
+
+
+--------------------------------------------------------------------------
+
+## Plot survival curves
+
+
+
+```{r, fig.show='asis'}
+#Plot survival curves
+Plot.Group=NULL
+Surv.Group=factor(egv.memb[names(Sur.l)])
+
+if(is.null(Plot.Group)){
+  t1= rep(T,length(Surv.Group))
+}else{
+  t1= egv.memb %in% Plot.Group
+}
+Sur.d1=Sur.d[t1]
+Sur.l1=Sur.l[t1]
+SurvObj=Surv(Sur.d1,event=Sur.l1==1,type='right')
+egv.memb.f1=Surv.Group[t1]
+sf=survfit(SurvObj ~ egv.memb.f1, conf.type = "log-log")
+group.colors=c('#BEBEBE',brewer.pal((max(egv.memb)), 'Set1'))
+flvs=as.integer(as.vector(sort(unique(egv.memb.f1))))
+survtest.result=survdiff(SurvObj ~ egv.memb.f1,rho=0)
+survtest.p.val <- 1 - pchisq(survtest.result$chisq,
+                             length(survtest.result$n) - 1)
+survtest.p.val=signif(survtest.p.val,2)
+survplotnm=paste0(filepath,'/',Cancer.Code,'_Survival_Curves.pdf')
+#pdf(survplotnm,width=8,height=6)
+plot(sf,conf.int=F,col=group.colors[flvs+1],mark.time=T,
+     xlab='Time (Months)',ylab='Proportion Survival')
+title(paste0(Cancer.Code,' Survival Curves'),line=2.2)
+mtext(paste0('p = ',survtest.p.val),side=3,
+      line=0.5,font=3,cex=0.8)
+lg.text=paste0('Group ',flvs)
+lg.text[lg.text=='Group 0']='Ungrouped'
+legend(max(Sur.d1),1,lg.text,lty=1,
+       col=group.colors[flvs+1],xjust=1,yjust=1)
+#dev.off()
+
+
+```
+
+--------------------------------------------------------------------------
+
+## Plot heatmap (including patient groups and subtypes)
+
+```{r,fig.height=8, fig.width=16, fig.show='asis'}
+#Plot heatmap (including patient groups and subtypes)
+group.col=group.colors[as.integer(as.vector(egv.memb.f))+1]
+colsidecolvector=as.matrix(group.col)
+colv.cns='Group'
+
+if('Subtype.Table' %in% save.data.nms){
+  mt=Subtype.Table
+  mt=as.matrix(mt)
+  rownames(mt)=colnames(Sbn.Exp)
+  mt[mt=='NA']=NA
+  mt.legend=apply(mt,2,make.color)#,qualitative)
+  mt.col=sapply(mt.legend,function(x)x$color)
+  colsidecolvector=cbind(mt.col,colsidecolvector)
+  colv.nnm=colnames(mt.col)
+  colv.cns=c(colv.nnm,colv.cns)
+}
+
+colnames(colsidecolvector)=colv.cns
+
+s.m=t(egv.m)
+t11=quantile(s.m,0.95)
+t12=quantile(s.m,0.05)
+s.m[s.m<t12]=t12
+s.m[s.m>t11]=t11
+heatmap.nm=paste0(filepath,'/',Cancer.Code,'_Heatmap.pdf')
+#pdf(heatmap.nm,width=16,height=8)
+heatmap.31(s.m,col=heat.col3,margin=c(5,10),cexRow=0.5,ColSideColors = colsidecolvector,labCol=NA,
+           Colv=egv.dendro,lwid=c(1,10),lhei=c(1,2,6),
+           key=F)
+#dev.off()
+
+for(i in 1:length(mt.legend)){
+  t1=colnames(mt.col)[i]
+  t2=mt.legend[[i]]
+  #temp.nm=paste0(filepath,'/',Cancer.Code,'_Heatmap_',gsub('\\.','_',t1),'_Legend.pdf')
+  #pdf(file=temp.nm,width=6,height=4)
+  plot.legend(t2,main=t1)
+  #dev.off()
+}
+
+```
+
+
+
+
+
+
+--------------------------------------------------------------------------
+
+## Network State Plot
+
+```{r}
+#Network State Plot
+fbn3.index=paste0('SN',1:length(f.Sbn.List))
+fbn3.index=fbn3.index[fbn3.index %in% names(f.Sbn.List1)]
+sn.sta=1
+sn.end=length(f.Sbn.List1)
+f.Sbn.List3=f.Sbn.List1[fbn3.index[sn.sta:sn.end]]
+
+grps=max(egv.memb)
+sub.n=length(f.Sbn.List3)
+l.wids=c(1,rep(5,sub.n))
+l.hgts=rep(c(1,rep(5,grps)),length(l.wids))
+m.c.ns1=names(f.Sbn.List3)
+m.c.ns2=paste0('Group',1:grps)
+m.c.ns2.col=group.colors[1:grps+1]
+l.matrix=matrix(1:((grps+1)*(sub.n+1)),nrow=grps+1)
+
+nsnm=paste0(filepath,'/',Cancer.Code,'_Network_State_',sn.sta,'-',sn.end,'.pdf')
+#pdf(file=nsnm,width=sum(l.wids),height=sum(l.hgts)/length(l.wids))
+layout(l.matrix,widths=l.wids,heights=l.hgts)
+ml1=max(abs(quantile(Sbn.Exp,c(0.05,0.95))))
+cmar=par()$mar
+par(mar=c(0,0,0,0))
+plot.new()
+box('plot',lwd=3,col='gray50')
+for(j in 1:grps){
+  plot.new()
+  text(0.5,0.5,m.c.ns2[j],cex=5,srt=90,col=m.c.ns2.col[j])
+  box('plot',lwd=3,col='gray50')
+}
+for(i in 1:sub.n){
+  plot.new()
+  text(0.5,0.5,m.c.ns1[i],cex=5)
+  box('plot',lwd=3,col='gray50')
+  gs=f.Sbn.List3[[i]]
+  g1=induced.subgraph(Sbn.Network,gs)
+  g2=induced.subgraph(Sbn.Network3,gs)
+  E(g2)$lty=1
+  g1=graph.union(g1,g2)
+  E(g1)$lty[is.na(E(g1)$lty)]=2
+  g1$layout=layout.auto(g1)
+  V(g1)$frame.color='gray75'
+  V(g1)$size=25
+  V(g1)$label.font=2
+  V(g1)$label.cex=2
+  V(g1)$label.color='black'
+  for(j in 1:grps){
+    v.cols=get.color2(V(g1)$name,egv.memb==j,Sbn.Exp,ml1)
+    plot(g1,vertex.color=v.cols)
+    # plot(g1,vertex.size=V(g1)$size*2.5)
+    box('plot',lwd=3,col='gray50')
+  }
+}
+par(mar=cmar)
+#dev.off()
+```
+
+
+
+
